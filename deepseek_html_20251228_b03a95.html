@@ -1,9 +1,242 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <meta http-equiv="refresh" content="0; url=home.html">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linhas de Ônibus - Caruaru</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        :root { --primary: #0066a6; --secondary: #00a651; --dark: #333; --light: #f5f5f5; --gray: #e0e0e0; --text: #444; }
+        body { background-color: #f9f9f9; color: var(--text); line-height: 1.6; }
+        header { background: linear-gradient(135deg, var(--primary), #004d80); color: white; padding: 1rem 2rem; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .logo-container { display: flex; align-items: center; gap: 1rem; }
+        .logo { height: 60px; }
+        .logo-text h1 { font-size: 1.8rem; margin-bottom: 0.2rem; }
+        .logo-text p { font-size: 0.9rem; opacity: 0.9; }
+        .search-container { display: flex; gap: 0.5rem; }
+        .search-container input { padding: 0.7rem 1rem; border: none; border-radius: 4px; width: 300px; font-size: 1rem; }
+        .search-container button { background-color: var(--secondary); color: white; border: none; border-radius: 4px; padding: 0 1.5rem; cursor: pointer; transition: background-color 0.3s; }
+        .search-container button:hover { background-color: #008f45; }
+        nav ul { display: flex; list-style: none; gap: 2rem; }
+        nav a { color: white; text-decoration: none; font-weight: 500; padding: 0.5rem 0; position: relative; transition: color 0.3s; }
+        nav a:hover { color: #cce7ff; }
+        nav a.active { color: #cce7ff; }
+        nav a.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: #cce7ff; }
+        .hero { background: linear-gradient(rgba(0, 102, 166, 0.8), rgba(0, 77, 128, 0.9)); color: white; padding: 4rem 2rem; text-align: center; }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; max-width: 800px; margin: 0 auto 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .section-title { color: var(--primary); margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gray); font-size: 1.8rem; }
+        .company-selector { background-color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-bottom: 2rem; }
+        .company-selector label { display: block; margin-bottom: 0.8rem; font-weight: 600; color: var(--primary); font-size: 1.1rem; }
+        .company-selector select { width: 100%; padding: 0.8rem 1rem; border: 2px solid var(--gray); border-radius: 4px; font-size: 1rem; background-color: white; cursor: pointer; transition: border-color 0.3s; }
+        .company-selector select:focus { border-color: var(--primary); outline: none; }
+        .bus-lines { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .bus-card { background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s, box-shadow 0.3s; display: none; flex-direction: column; }
+        .bus-card.active { display: flex; }
+        .bus-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); }
+        .bus-header { background-color: var(--primary); color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .bus-number { font-size: 1.5rem; font-weight: bold; }
+        .bus-name { font-size: 1.1rem; font-weight: 500; }
+        .bus-body { padding: 1.5rem; flex-grow: 1; }
+        .bus-route { display: flex; align-items: center; margin-bottom: 1rem; }
+        .bus-route i { color: var(--secondary); margin-right: 0.5rem; }
+        .bus-info { display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.9rem; color: #666; }
+        .bus-footer { padding: 0 1.5rem 1.5rem; }
+        .map-btn { display: block; width: 100%; background-color: var(--secondary); color: white; border: none; border-radius: 4px; padding: 0.7rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s; text-align: center; text-decoration: none; }
+        .map-btn:hover { background-color: #008f45; }
+        .map-btn i { margin-right: 0.5rem; }
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 2rem; background-color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); display: none; }
+        .no-results.active { display: block; }
+        .bus-schedule { background-color: var(--light); padding: 1.5rem; border-radius: 8px; margin-bottom: 3rem; }
+        .schedule-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .schedule-table th, .schedule-table td { padding: 0.8rem; text-align: left; border-bottom: 1px solid var(--gray); }
+        .schedule-table th { background-color: var(--primary); color: white; }
+        .schedule-table tr:nth-child(even) { background-color: #f8f8f8; }
+        .map-container { background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); margin-bottom: 3rem; }
+        .map-header { background-color: var(--primary); color: white; padding: 1rem; font-size: 1.2rem; font-weight: 500; }
+        .map-content { height: 400px; background-color: #e9e9e9; display: flex; align-items: center; justify-content: center; color: #666; font-size: 1.1rem; position: relative; }
+        .map-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; padding: 2rem; }
+        .map-overlay.active { opacity: 1; visibility: visible; }
+        .map-route-info { background-color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); max-width: 500px; text-align: center; }
+        .map-route-info h3 { color: var(--primary); margin-bottom: 1rem; font-size: 1.3rem; }
+        .close-map-btn { position: absolute; top: 1rem; right: 1rem; background-color: var(--primary); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .services { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .service-card { background-color: white; border-radius: 8px; padding: 1.5rem; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s; }
+        .service-card:hover { transform: translateY(-5px); }
+        .service-icon { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; }
+        .service-card h3 { color: var(--primary); margin-bottom: 0.5rem; }
+        footer { background-color: var(--dark); color: white; padding: 3rem 2rem 1.5rem; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .footer-section h3 { color: var(--secondary); margin-bottom: 1.5rem; font-size: 1.2rem; }
+        .footer-section ul { list-style: none; }
+        .footer-section ul li { margin-bottom: 0.8rem; }
+        .footer-section a { color: #ccc; text-decoration: none; transition: color 0.3s; }
+        .footer-section a:hover { color: white; }
+        .footer-bottom { max-width: 1200px; margin: 0 auto; text-align: center; padding-top: 1.5rem; border-top: 1px solid #555; color: #aaa; font-size: 0.9rem; }
+        @media (max-width: 768px) {
+            .header-top { flex-direction: column; gap: 1rem; }
+            .search-container input { width: 100%; }
+            nav ul { flex-wrap: wrap; gap: 1rem; }
+            .hero h2 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .bus-lines { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <p>Redirecionando... <a href="home.html">Clique aqui</a></p>
+    <header>
+        <div class="header-top">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="30" cy="30" r="28" fill="#0066a6" stroke="white" stroke-width="2"/>
+                        <path d="M20 20 L40 20 L40 40 L20 40 Z" fill="white"/>
+                        <circle cx="25" cy="45" r="4" fill="white"/>
+                        <circle cx="35" cy="45" r="4" fill="white"/>
+                        <rect x="22" y="25" width="16" height="8" fill="#0066a6"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>LINHAS DE ÔNIBUS - CARUARU</h1>
+                    <p>Sistema de Transporte Público</p>
+                </div>
+            </div>
+            <div class="search-container">
+                <input type="text" placeholder="Pesquisar linhas de ônibus...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active">Linhas de Ônibus</a></li>
+                <li><a href="#">Horários</a></li>
+                <li><a href="#">Tarifas</a></li>
+                <li><a href="#">Itinerários</a></li>
+                <li><a href="#">Notícias</a></li>
+                <li><a href="#">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h2>Linhas de Ônibus de Caruaru</h2>
+        <p>Encontre todas as informações sobre as linhas de ônibus, horários, itinerários e tarifas do sistema de transporte público da cidade.</p>
+    </section>
+
+    <div class="container">
+        <h2 class="section-title">Linhas de Ônibus por Empresa Operadora</h2>
+        
+        <div class="company-selector">
+            <label for="company-select">SELECIONE A EMPRESA OPERADORA:</label>
+            <select id="company-select">
+                <option value="">Selecione uma empresa</option>
+                <option value="coletivos">COLETIVOS</option>
+                <option value="bandeira">BANDEIRA MOBILIDADE</option>
+                <option value="tabosa">TABOSA</option>
+            </select>
+        </div>
+        
+        <div class="bus-lines" id="bus-lines-container">
+            <div class="bus-card coletivos">
+                <div class="bus-header"><div class="bus-number">101</div><div class="bus-name">VILA KENNEDY</div></div>
+                <div class="bus-body"><div class="bus-route"><i class="fas fa-map-marker-alt"></i><span>Terminal Central - Vila Kennedy</span></div><div class="bus-info"><div><i class="far fa-clock"></i> 5:00 - 23:00</div><div><i class="fas fa-bus"></i> 15 min</div></div></div>
+                <div class="bus-footer"><button class="map-btn" data-line="101" data-name="VILA KENNEDY"><i class="fas fa-map-marked-alt"></i> Ver no Mapa</button></div>
+            </div>
+            
+            <!-- Adicione mais linhas conforme necessário -->
+            <!-- Para economizar espaço, mantive apenas uma linha como exemplo -->
+            
+            <div class="no-results" id="no-results">
+                <i class="fas fa-bus-slash" style="font-size: 3rem; margin-bottom: 1rem; color: #ccc;"></i>
+                <h3>Nenhuma linha encontrada</h3>
+                <p>Selecione uma empresa operadora para visualizar as linhas.</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">Mapa de Rotas</h2>
+        <div class="map-container">
+            <div class="map-header"><i class="fas fa-map-marked-alt"></i> Mapa das Linhas de Ônibus de Caruaru</div>
+            <div class="map-content">
+                <div id="map-default"><p>Clique em "Ver no Mapa" em qualquer linha para visualizar sua rota.</p></div>
+                <div class="map-overlay" id="map-overlay">
+                    <button class="close-map-btn" id="close-map-btn"><i class="fas fa-times"></i></button>
+                    <div class="map-route-info" id="map-route-info">
+                        <h3 id="map-route-title">Linha 101 - VILA KENNEDY</h3>
+                        <p>Visualizando a rota da linha selecionada no mapa.</p>
+                        <p><i class="fas fa-clock"></i> Horário: 5:00 - 23:00</p>
+                        <p><i class="fas fa-bus"></i> Intervalo: 15 minutos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Horários de Funcionamento</h2>
+        <div class="bus-schedule">
+            <p>O sistema de transporte de Caruaru funciona das <strong>05:00 às 23:00</strong> para todas as linhas.</p>
+            <table class="schedule-table">
+                <thead><tr><th>Empresa Operadora</th><th>Primeiro Ônibus</th><th>Último Ônibus</th><th>Intervalo Médio (min)</th></tr></thead>
+                <tbody>
+                    <tr><td>COLETIVOS</td><td>05:00</td><td>23:00</td><td>15-20</td></tr>
+                    <tr><td>BANDEIRA MOBILIDADE</td><td>05:00</td><td>23:00</td><td>20-25</td></tr>
+                    <tr><td>TABOSA</td><td>05:00</td><td>23:00</td><td>15-30</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>TRANSPORTE CARUARU</h3><p>Sistema de Transporte Público de Caruaru</p><p>Endereço: Av. Agamenon Magalhães, 123 - Centro</p><p>Telefone: (81) 3721-1234</p><p>Email: contato@transporte.caruaru.pe.gov.br</p></div>
+            <div class="footer-section"><h3>Links Rápidos</h3><ul><li><a href="#">Linhas de Ônibus</a></li><li><a href="#">Horários</a></li><li><a href="#">Tarifas</a></li><li><a href="#">Itinerários</a></li><li><a href="#">Notícias</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2023 Sistema de Transporte Público de Caruaru. Todos os direitos reservados.</p></div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const companySelect = document.getElementById('company-select');
+            const busCards = document.querySelectorAll('.bus-card');
+            const noResults = document.getElementById('no-results');
+            const mapOverlay = document.getElementById('map-overlay');
+            const closeMapBtn = document.getElementById('close-map-btn');
+            const mapRouteTitle = document.getElementById('map-route-title');
+            
+            busCards.forEach(card => { card.style.display = 'none'; });
+            noResults.classList.add('active');
+            
+            companySelect.addEventListener('change', function() {
+                const selectedCompany = this.value;
+                busCards.forEach(card => { card.style.display = 'none'; card.classList.remove('active'); });
+                
+                if (selectedCompany) {
+                    const companyCards = document.querySelectorAll(`.bus-card.${selectedCompany}`);
+                    if (companyCards.length > 0) {
+                        companyCards.forEach(card => { card.style.display = 'flex'; card.classList.add('active'); });
+                        noResults.classList.remove('active');
+                    } else {
+                        noResults.classList.add('active');
+                    }
+                } else {
+                    noResults.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.map-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const lineNumber = this.getAttribute('data-line');
+                    const lineName = this.getAttribute('data-name');
+                    mapRouteTitle.textContent = `Linha ${lineNumber} - ${lineName}`;
+                    document.querySelector('.map-container').scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => { mapOverlay.classList.add('active'); }, 500);
+                });
+            });
+            
+            closeMapBtn.addEventListener('click', function() { mapOverlay.classList.remove('active'); });
+            mapOverlay.addEventListener('click', function(e) { if (e.target === this) { this.classList.remove('active'); } });
+        });
+    </script>
 </body>
 </html>
